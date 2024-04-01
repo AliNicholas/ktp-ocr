@@ -1,40 +1,21 @@
-// Copyright (C) 2021, Mindee.
-
-// This program is licensed under the Apache License version 2.
-// See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
-
 import cv from "@techstark/opencv-js";
 import {
   argMax,
   browser,
   concat,
-  GraphModel,
   loadGraphModel,
   scalar,
   softmax,
   squeeze,
   unstack,
 } from "@tensorflow/tfjs";
-import { Layer } from "konva/lib/Layer";
 import randomColor from "randomcolor";
-import { MutableRefObject } from "react";
-import { AnnotationShape, Stage } from "react-mindee-js";
-import {
-  DET_MEAN,
-  DET_STD,
-  REC_MEAN,
-  REC_STD,
-  VOCAB,
-} from "src/common/constants";
-import { ModelConfig } from "src/common/types";
+import { DET_MEAN, DET_STD, REC_MEAN, REC_STD, VOCAB } from "./constants";
 import { chunk } from "underscore";
 
 export const loadRecognitionModel = async ({
   recognitionModel,
   recoConfig,
-}: {
-  recognitionModel: MutableRefObject<GraphModel | null>;
-  recoConfig: ModelConfig;
 }) => {
   try {
     recognitionModel.current = await loadGraphModel(recoConfig.path);
@@ -43,13 +24,7 @@ export const loadRecognitionModel = async ({
   }
 };
 
-export const loadDetectionModel = async ({
-  detectionModel,
-  detConfig,
-}: {
-  detectionModel: MutableRefObject<GraphModel | null>;
-  detConfig: ModelConfig;
-}) => {
+export const loadDetectionModel = async ({ detectionModel, detConfig }) => {
   try {
     detectionModel.current = await loadGraphModel(detConfig.path);
   } catch (error) {
@@ -57,15 +32,12 @@ export const loadDetectionModel = async ({
   }
 };
 
-export const getImageTensorForRecognitionModel = (
-  crops: HTMLImageElement[],
-  size: [number, number]
-) => {
+export const getImageTensorForRecognitionModel = (crops, size) => {
   const list = crops.map((imageObject) => {
     let h = imageObject.height;
     let w = imageObject.width;
-    let resize_target: any;
-    let padding_target: any;
+    let resize_target;
+    let padding_target;
     let aspect_ratio = size[1] / size[0];
     if (aspect_ratio * h > w) {
       resize_target = [size[0], Math.round((size[0] * w) / h)];
@@ -95,10 +67,7 @@ export const getImageTensorForRecognitionModel = (
   return tensor.sub(mean).div(std);
 };
 
-export const getImageTensorForDetectionModel = (
-  imageObject: HTMLImageElement,
-  size: [number, number]
-) => {
+export const getImageTensorForDetectionModel = (imageObject, size) => {
   let tensor = browser
     .fromPixels(imageObject)
     .resizeNearestNeighbor(size)
@@ -108,20 +77,8 @@ export const getImageTensorForDetectionModel = (
   return tensor.sub(mean).div(std).expandDims();
 };
 
-export const extractWords = async ({
-  recognitionModel,
-  stage,
-  size,
-}: {
-  recognitionModel: GraphModel | null;
-  stage: Stage;
-  size: [number, number];
-}) => {
-  const crops = (await getCrops({ stage })) as Array<{
-    id: string;
-    crop: HTMLImageElement;
-    color: string;
-  }>;
+export const extractWords = async ({ recognitionModel, stage, size }) => {
+  const crops = await getCrops({ stage });
   const chunks = chunk(crops, 32);
   return Promise.all(
     chunks.map(
@@ -142,7 +99,7 @@ export const extractWords = async ({
   );
 };
 
-export const dataURItoBlob = (dataURI: string) => {
+export const dataURItoBlob = (dataURI) => {
   let byteString;
   const splitDataURL = dataURI.split(",");
   if (splitDataURL[0].indexOf("base64") >= 0) {
@@ -163,8 +120,8 @@ export const dataURItoBlob = (dataURI: string) => {
   return new Blob([ia], { type: mimeString });
 };
 
-export const getCrops = ({ stage }: { stage: Stage }) => {
-  const layer = stage.findOne<Layer>("#shapes-layer");
+export const getCrops = ({ stage }) => {
+  const layer = stage.findOne("#shapes-layer");
   const polygons = layer.find(".shape");
   return Promise.all(
     polygons.map((polygon) => {
@@ -174,7 +131,7 @@ export const getCrops = ({ stage }: { stage: Stage }) => {
           ...clientRect,
           quality: 5,
           pixelRatio: 10,
-          callback: (value: HTMLImageElement) => {
+          callback: (value) => {
             resolve({
               id: polygon.id(),
               crop: value,
@@ -191,10 +148,6 @@ export const extractWordsFromCrop = async ({
   recognitionModel,
   crops,
   size,
-}: {
-  recognitionModel: GraphModel | null;
-  crops: any;
-  size: [number, number];
 }) => {
   if (!recognitionModel) {
     return;
@@ -231,21 +184,16 @@ export const getHeatMapFromImage = async ({
   detectionModel,
   imageObject,
   size,
-}: {
-  detectionModel: GraphModel | null;
-  heatmapContainer: HTMLCanvasElement | null;
-  imageObject: HTMLImageElement;
-  size: [number, number];
 }) =>
   new Promise(async (resolve) => {
     if (!heatmapContainer && !detectionModel) {
       return;
     }
 
-    heatmapContainer!.width = imageObject.width;
-    heatmapContainer!.height = imageObject.height;
+    heatmapContainer.width = imageObject.width;
+    heatmapContainer.height = imageObject.height;
     let tensor = getImageTensorForDetectionModel(imageObject, size);
-    let prediction: any = await detectionModel?.execute(tensor);
+    let prediction = await detectionModel?.execute(tensor);
     // @ts-ignore
     prediction = squeeze(prediction, 0);
     if (Array.isArray(prediction)) {
@@ -255,15 +203,11 @@ export const getHeatMapFromImage = async ({
     await browser.toPixels(prediction, heatmapContainer);
     resolve("test");
   });
-function clamp(number: number, size: number) {
+function clamp(number, size) {
   return Math.max(0, Math.min(number, size));
 }
 
-export const transformBoundingBox = (
-  contour: any,
-  id: number,
-  size: [number, number]
-): AnnotationShape => {
+export const transformBoundingBox = (contour, id, size) => {
   let offset =
     (contour.width * contour.height * 1.8) /
     (2 * (contour.width + contour.height));
@@ -285,7 +229,7 @@ export const transformBoundingBox = (
   };
 };
 
-export const extractBoundingBoxesFromHeatmap = (size: [number, number]) => {
+export const extractBoundingBoxesFromHeatmap = (size) => {
   let src = cv.imread("heatmap");
   cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY, 0);
   cv.threshold(src, src, 77, 255, cv.THRESH_BINARY);

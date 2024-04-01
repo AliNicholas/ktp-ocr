@@ -1,8 +1,8 @@
-import { Grid, makeStyles, Theme } from "@material-ui/core";
+import { Grid, makeStyles } from "@material-ui/core";
 import { COLORS } from "@mindee/web-elements.assets";
 import VisionWrapper from "./components/VisionWrapper";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles((theme) => ({
   wrapper: {
     height: "100vh",
     width: "100%",
@@ -24,15 +24,7 @@ function App() {
         <Grid item xs={12}>
           <VisionWrapper />
         </Grid>
-        {/* <Grid item xs={12}>
-            <PageFooter />
-          </Grid> */}
-        {/* </Grid> */}
       </Grid>
-      {/* </BrowserView> */}
-      {/* <MobileView>
-        <MobileViewPage />
-      </MobileView> */}
     </>
   );
 }

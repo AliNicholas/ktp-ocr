@@ -1,22 +1,12 @@
-// Copyright (C) 2021, Mindee.
-
-// This program is licensed under the Apache License version 2.
-// See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
-
-import { Box, makeStyles, Theme } from "@material-ui/core";
+import { Box, makeStyles } from "@material-ui/core";
 import { COLORS, FONTS } from "@mindee/web-elements.assets";
 import { Card } from "@mindee/web-elements.ui.card";
 import { Typography } from "@mindee/web-elements.ui.typography";
 import { Spinner } from "@mindee/web-elements.ui.spinner";
-import {
-  AnnotationData,
-  AnnotationShape,
-  AnnotationViewer as AnnotationViewerBase,
-  Stage,
-} from "react-mindee-js";
+import { AnnotationViewer as AnnotationViewerBase } from "react-mindee-js";
 const COMPONENT_ID = "AnnotationViewer";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles((theme) => ({
   wrapper: {
     height: "100%",
   },
@@ -26,15 +16,6 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
-interface Props {
-  loadingImage: boolean;
-  annotationData: AnnotationData;
-  setAnnotationStage: (stage: Stage) => void;
-  onShapeMouseEnter: (shape: AnnotationShape) => void;
-  onShapeMouseLeave: (shape: AnnotationShape) => void;
-  onShapeClick: (shape: AnnotationShape) => void;
-}
-
 export default function AnnotationViewer({
   setAnnotationStage,
   annotationData,
@@ -42,7 +23,7 @@ export default function AnnotationViewer({
   onShapeClick,
   loadingImage,
   onShapeMouseEnter,
-}: Props): JSX.Element {
+}) {
   const classes = useStyles();
   return (
     <Card
@@ -60,7 +41,7 @@ export default function AnnotationViewer({
           paragraph
           variant="subtitle1"
         >
-          3 - Visualize word predictions
+          KTP yang sudah di proses
         </Typography>
       }
       className={classes.wrapper}
@@ -77,7 +58,7 @@ export default function AnnotationViewer({
           width="100%"
           justifyContent="center"
         >
-          <Typography variant="body2">No image uploaded yet</Typography>
+          <Typography variant="body2">foto belum di upload</Typography>
         </Box>
       ) : (
         <AnnotationViewerBase

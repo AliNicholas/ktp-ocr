@@ -1,17 +1,10 @@
-// Copyright (C) 2021, Mindee.
-
-// This program is licensed under the Apache License version 2.
-// See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
-
-import { Box, makeStyles, Theme, Typography } from "@material-ui/core";
+import { Box, makeStyles, Typography } from "@material-ui/core";
 import Uploader from "./Uploader";
-import { UploadedFile } from "../common/types";
-
 import placeholder from "../assets/image-placeholder.svg";
 import { FONTS } from "@mindee/web-elements.assets";
 import { Spinner } from "@mindee/web-elements.ui.spinner";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles((theme) => ({
   wrapper: {
     height: "100%",
   },
@@ -28,15 +21,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
-interface Props {
-  loadingImage: boolean;
-  onUpload: (file: UploadedFile) => void;
-}
-
-export default function ImageViewer({
-  onUpload,
-  loadingImage,
-}: Props): JSX.Element {
+export default function ImageViewer({ onUpload, loadingImage }) {
   const classes = useStyles();
   return (
     <Box className={classes.wrapper}>
@@ -45,7 +30,7 @@ export default function ImageViewer({
         paragraph
         variant="subtitle1"
       >
-        2 - Upload an image
+        Upload KTP
       </Typography>
       <Uploader
         style={{ height: "225px", justifyContent: "center" }}
@@ -70,7 +55,7 @@ export default function ImageViewer({
               className={classes.placeholder}
             />
             <Typography align="center" style={{ fontSize: 15 }} variant="body2">
-              Upload an image <br />
+              Upload foto KTP <br />
               (.jpg, .png, .webp)
             </Typography>
           </Box>

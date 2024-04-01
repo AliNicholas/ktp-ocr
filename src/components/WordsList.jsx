@@ -4,16 +4,14 @@ import {
   CircularProgress,
   Grid,
   makeStyles,
-  Theme,
   Typography,
 } from "@material-ui/core";
 import { Card } from "@mindee/web-elements.ui.card";
-import { Word } from "src/common/types";
 import { COLORS, FONTS } from "@mindee/web-elements.assets";
 
 const COMPONENT_ID = "WordsList";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles((theme) => ({
   wrapper: {
     height: "100%",
   },
@@ -37,20 +35,13 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
-interface Props {
-  words: Word[];
-  extractingWords: boolean;
-  onFieldMouseLeave: (word: Word) => void;
-  onFieldMouseEnter: (word: Word) => void;
-  fieldRefsObject: any[];
-}
 export default function WordsList({
   words,
   onFieldMouseEnter,
   onFieldMouseLeave,
   extractingWords,
   fieldRefsObject,
-}: Props): JSX.Element {
+}) {
   const classes = useStyles();
   return (
     <Card
@@ -62,7 +53,7 @@ export default function WordsList({
             paragraph
             variant="subtitle1"
           >
-            4 - Visualize word values
+            Informasi yang terbaca
           </Typography>
           <Typography style={{ fontSize: 14, marginTop: -5 }} variant="caption">
             {words.length ? `${words.length}  words identified` : ""}
@@ -86,7 +77,7 @@ export default function WordsList({
             alignItems="center"
             justifyContent="center"
           >
-            <Typography variant="body2">No image uploaded yet</Typography>
+            <Typography variant="body2">foto belum di proses</Typography>
           </Box>
         )}
         {extractingWords ? (

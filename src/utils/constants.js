@@ -1,10 +1,3 @@
-// Copyright (C) 2021, Mindee.
-
-// This program is licensed under the Apache License version 2.
-// See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
-
-// Detection cfg
-
 export const DET_MEAN = 0.785;
 export const DET_STD = 0.275;
 

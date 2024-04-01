@@ -1,30 +1,16 @@
-// Copyright (C) 2021, Mindee.
-
-// This program is licensed under the Apache License version 2.
-// See LICENSE or go to <https://www.apache.org/licenses/LICENSE-2.0.txt> for full license details.
-
-import { Grid, makeStyles, Portal, Theme } from "@material-ui/core";
-import { GraphModel } from "@tensorflow/tfjs";
+import { Grid, makeStyles, Portal } from "@material-ui/core";
 import { createRef, useEffect, useMemo, useRef, useState } from "react";
-import {
-  AnnotationData,
-  AnnotationShape,
-  drawLayer,
-  drawShape,
-  setShapeConfig,
-  Stage,
-} from "react-mindee-js";
-import { DET_CONFIG, RECO_CONFIG } from "src/common/constants";
+import { drawLayer, drawShape, setShapeConfig } from "react-mindee-js";
+import { DET_CONFIG, RECO_CONFIG } from "../utils/constants";
 import {
   extractBoundingBoxesFromHeatmap,
   extractWords,
   getHeatMapFromImage,
   loadDetectionModel,
   loadRecognitionModel,
-} from "src/utils";
-import { useStateWithRef } from "src/utils/hooks";
+} from "../utils/tensorflow";
+import { useStateWithRef } from "../utils/hooks";
 import { flatten } from "underscore";
-import { UploadedFile, Word } from "../common/types";
 import AnnotationViewer from "./AnnotationViewer";
 import HeatMap from "./HeatMap";
 import ImageViewer from "./ImageViewer";
@@ -33,32 +19,32 @@ import WordsList from "./WordsList";
 
 const COMPONENT_ID = "VisionWrapper";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles((theme) => ({
   wrapper: {},
 }));
 
-export default function VisionWrapper(): JSX.Element {
+export default function VisionWrapper() {
   const classes = useStyles();
   const [detConfig, setDetConfig] = useState(DET_CONFIG.db_mobilenet_v2);
   const [recoConfig, setRecoConfig] = useState(RECO_CONFIG.crnn_vgg16_bn);
   const [loadingImage, setLoadingImage] = useState(false);
-  const recognitionModel = useRef<GraphModel | null>(null);
-  const detectionModel = useRef<GraphModel | null>(null);
-  const imageObject = useRef<HTMLImageElement>(new Image());
-  const heatMapContainerObject = useRef<HTMLCanvasElement | null>(null);
-  const annotationStage = useRef<Stage | null>();
+  const recognitionModel = useRef(null);
+  const detectionModel = useRef(null);
+  const imageObject = useRef(new Image());
+  const heatMapContainerObject = useRef(null);
+  const annotationStage = useRef();
   const [extractingWords, setExtractingWords] = useState(false);
-  const [annotationData, setAnnotationData] = useState<AnnotationData>({
+  const [annotationData, setAnnotationData] = useState({
     image: null,
   });
-  const fieldRefsObject = useRef<any[]>([]);
-  const [words, setWords, wordsRef] = useStateWithRef<Word[]>([]);
+  const fieldRefsObject = useRef([]);
+  const [words, setWords, wordsRef] = useStateWithRef([]);
 
   const clearCurrentStates = () => {
     setWords([]);
   };
 
-  const onUpload = (newFile: UploadedFile) => {
+  const onUpload = (newFile) => {
     clearCurrentStates();
     loadImage(newFile);
     setAnnotationData({ image: newFile.image });
@@ -109,16 +95,16 @@ export default function VisionWrapper(): JSX.Element {
   };
 
   const getWords = async () => {
-    const words = (await extractWords({
+    const words = await extractWords({
       recognitionModel: recognitionModel.current,
-      stage: annotationStage.current!,
+      stage: annotationStage.current,
       size: [recoConfig.height, recoConfig.width],
-    })) as Word[];
+    });
     setWords(flatten(words));
     setExtractingWords(false);
   };
 
-  const loadImage = async (uploadedFile: UploadedFile) => {
+  const loadImage = async (uploadedFile) => {
     setLoadingImage(true);
     setExtractingWords(true);
     imageObject.current.onload = async () => {
@@ -131,25 +117,25 @@ export default function VisionWrapper(): JSX.Element {
       getBoundingBoxes();
       setLoadingImage(false);
     };
-    imageObject.current.src = uploadedFile?.image as string;
+    imageObject.current.src = uploadedFile?.image;
   };
-  const setAnnotationStage = (stage: Stage) => {
+  const setAnnotationStage = (stage) => {
     annotationStage.current = stage;
   };
 
-  const onFieldMouseLeave = (word: Word) => {
-    drawShape(annotationStage.current!, word.id, {
+  const onFieldMouseLeave = (word) => {
+    drawShape(annotationStage.current, word.id, {
       fill: `${word.color}33`,
     });
   };
-  const onFieldMouseEnter = (word: Word) => {
-    setShapeConfig(annotationStage.current!, word.id, {
+  const onFieldMouseEnter = (word) => {
+    setShapeConfig(annotationStage.current, word.id, {
       fill: "transparent",
     });
 
-    drawLayer(annotationStage.current!);
+    drawLayer(annotationStage.current);
   };
-  const onShapeMouseEnter = (shape: AnnotationShape) => {
+  const onShapeMouseEnter = (shape) => {
     const newWords = [...wordsRef.current];
     const fieldIndex = newWords.findIndex((word) => word.id === shape.id);
     if (fieldIndex >= 0) {
@@ -157,7 +143,7 @@ export default function VisionWrapper(): JSX.Element {
       setWords(newWords);
     }
   };
-  const onShapeMouseLeave = (shape: AnnotationShape) => {
+  const onShapeMouseLeave = (shape) => {
     const newWords = [...wordsRef.current];
     const fieldIndex = newWords.findIndex((word) => word.id === shape.id);
     if (fieldIndex >= 0) {
@@ -169,7 +155,7 @@ export default function VisionWrapper(): JSX.Element {
     () => words.map((word) => createRef()),
     [words]
   );
-  const onShapeClick = (shape: AnnotationShape) => {
+  const onShapeClick = (shape) => {
     const fieldIndex = wordsRef.current.findIndex(
       (word) => word.id === shape.id
     );
